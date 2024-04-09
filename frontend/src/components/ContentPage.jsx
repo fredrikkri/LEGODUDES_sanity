@@ -1,6 +1,5 @@
 import Title from './Title'
 import ProductCard from './ProductCard'
-import {products} from '../assets/legoduds'
 import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { fetchCategoryBySlug } from '../../sanity/services/categoryServices'
@@ -10,7 +9,7 @@ export default function ContentPage({amount, setAmount, category, setCart, cart}
 
   const getCategoriesBySlug = async (slug) => {
     const data = await fetchCategoryBySlug(slug)
-    setCatInfo(data)
+    setCatInfo(data[0])
   } 
 
 useEffect(() => {
@@ -20,19 +19,8 @@ useEffect(() => {
     return(
         <main>
           <Title category={catInfo?.categorytitle} />
-          {/* {products.map(product => 
-          <ProductCard
-          cart={cart} 
-          setCart={setCart}
-          prodid={product.prodid}
-          key={product.prodid} 
-          category={product.category} 
-          title={product.title} 
-          img={product.imagefile} 
-          price={product.price}
-          amount={amount}
-          setAmount={setAmount}
-          /> )} */}
+          {catInfo?.catProducts.map((product, index) => 
+          <ProductCard key={index} productInfo={product} setAmount={setAmount} setCart={setCart} cart={cart}/>)}
         </main>
     )
 }
