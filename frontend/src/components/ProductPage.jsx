@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchProductsBySlug } from '../../sanity/services/productServices'
+import { fetchProductsBySlug, updateReview } from '../../sanity/services/productServices'
 import { Link } from "react-router-dom"
 
 export default function ProductPage() {
@@ -8,6 +8,7 @@ export default function ProductPage() {
     const [reviewer, setReviewer] = useState("")
     const [comment, setComment] = useState("")
     const [rating, setRating] = useState(0)
+    const [forMessage, setForMessage] = useState("")
 
 // handleChange funksjoner for felter.
 const handleReviewerChange = (e) => {
@@ -20,8 +21,24 @@ const handleCommentChange = (e) => {
 }
 const handleRatingChange = (e) => {
     e.preventDefault() 
-    setRating(e.target.value)
+    setRating(Number(e.target.value))
 } 
+// handleSubmit-funksjon for når en bruker sender en anmeldelse
+const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (rating === 0) {
+        setForMessage("Du må sette en vurdering.")
+    } else {
+        const result = await updateReview(product._id, reviewer, comment, rating)
+        if(result == "Success") {
+            setForMessage("Din anmeldelse er registrert!")
+            product.reviews.push({reviewer: reviewer, comment: comment, rating: rating})
+        } else {
+            setForMessage(result)
+        }
+        console.log(result)
+    }
+}
 
     const {slug} = useParams()
     const [product, setProduct] = useState(null)
@@ -63,7 +80,8 @@ const handleRatingChange = (e) => {
                         </p>
                         <p>
                             <label htmlFor="rating">Vurdering:</label><br />
-                            <select name="rating" id="rating" onChange={handleRatingChange}>
+                            <select name="rating" id="rating" required onChange={handleRatingChange}>
+                                <option value="">Velg din vurdering</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -71,10 +89,11 @@ const handleRatingChange = (e) => {
                                 <option value="5">5</option>
                             </select>
                         </p>
-                        <p><button>Send anmeldelse</button></p>
+                        <p id='formessage'>{forMessage}</p>
+                        <p><button onClick={handleSubmit}>Send anmeldelse</button></p>
                     </form>
                     {
-                        product?.reviews.map((r, i) => <p key={i}>
+                        product?.reviews?.map((r, i) => <p key={i}>
                             <strong>{r.reviewer}</strong><br />
                             {r.comment}<br />
                             Vurdering: {r.rating}
